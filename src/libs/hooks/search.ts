@@ -16,16 +16,18 @@ export function Search() {
   function search(string: string, data: Idata_tree[]) {
     let res: Idata_tree[][] = []
     dfs(data)
+    console.log(data);
 
     function dfs(dataArr: Idata_tree[], temp: Idata_tree[] = []) {
       for (let i of dataArr) {
         temp.push(i)
-        if (!i.ad_name.includes(string) && !string.includes(i.ad_name)) {
+        if (!i.ad_name.startsWith(string) && !string.startsWith(i.ad_name)) {
           i.children && dfs(i.children, temp)
           temp.pop()
         }
         else {
           res.push([...temp])
+          temp.pop()
         }
       }
     }
