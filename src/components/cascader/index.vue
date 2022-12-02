@@ -6,7 +6,7 @@
       <button class="btn" @click="pull" v-else>👆</button>
     </div>
 
-    <seletBoxVue :propData="propData" @getData="getData" :show="tabShow" :clickItemIndex="clickItemIndex" />
+    <seletBoxVue :propData="propData" @inputDom="getInputDom" @getData="getData" :show="tabShow" />
 
     <div class="select" @click="cover()" v-show="matchBoxShow">
       <span v-for="i in match">{{ i.ad_name }}</span>
@@ -21,7 +21,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ref, reactive, type Ref, computed, watch, ReactiveEffect, toRefs, } from 'vue';
+import { ref, reactive, type Ref, computed, watch, ReactiveEffect, toRefs, type InputHTMLAttributes, } from 'vue';
 
 import { arrTotree, debounce } from '@/libs/index'
 import type { Idata_tree } from '@/types/Idata';
@@ -44,20 +44,29 @@ const keyword: Ref<string[] | string> = ref([])
 // 保存选择的区
 const tempInputText: Ref<string[]> = ref([])
 
-const clickItemIndex: Ref<number> = ref(0)
+//收集所有的inputs选项 -> 为了实现点击同一列切换时候 之前的后面一列选项取消
+const allInputsDom: Ref<InputHTMLAttributes[][]> = ref([])
+const getInputDom = (inputs: InputHTMLAttributes[], index: Ref<number>) => {
+  duplicate(allInputsDom, index.value, inputs)
+  allInputsDom.value[index.value].map(item => {
+    item.checked = false
+  })
+}
+
+// 去重函数
+function duplicate<T, Y>(arr: Ref<T[]>, index: number, item: T) {
+  if (arr.value[index]) {
+    arr.value = arr.value.slice(0, index)
+  }
+  arr.value.push(item)
+}
 // 点击每一项选项触发
 const getData = (itemChildren: Idata_tree[], index: number, item: Idata_tree) => {
-  clickItemIndex.value = index
 
-  if (propData.value[index + 1]) {
-    propData.value = propData.value.slice(0, index + 1)
-  }
-  propData.value.push(itemChildren)
+  duplicate(propData, index + 1, itemChildren)
 
-  if (tempInputText.value[index]) {
-    tempInputText.value = tempInputText.value.slice(0, index)
-  }
-  tempInputText.value.push(item.ad_name)
+  duplicate(tempInputText, index, item.ad_name)
+
   // 如果没子类 说明到达最后一层 选择完之后直接赋值给input
   if (!item.children) {
     keyword.value = tempInputText.value
@@ -68,7 +77,7 @@ const getData = (itemChildren: Idata_tree[], index: number, item: Idata_tree) =>
 const tabShow = ref(false)
 const pull = () => {
   tabShow.value = !tabShow.value
-  match.value = []
+  // match.value = []
 }
 
 const { search, deep } = Search()
@@ -107,31 +116,31 @@ const cover = (item?: Idata_tree[]) => {
 
 watch(keyword, (n) => {
   // 防抖处理
-  // debounce(() => {
-  if (Number(n)) {
-    const resArr = deep((n as string), tree)
-    clearMatch()
-    resArr && resArr.map(item => {
-      match.value.push(item)
-    })
-  }
-  // 为了控制 输入框为空时，清空所有选项卡
-  if (n === '') {
-    tabShow.value = false
-    clearPropData()
-    clearMatch()
-    clearMatchName()
-  }
-  // 模糊搜索
-  if (typeof n === 'string' && n !== '') {
-    const resArr = search(n, tree)
-    clearMatchName()
-    resArr.map(item => {
-      matchName.value.push(item)
-    })
-  }
+  debounce(() => {
+    if (Number(n)) {
+      const resArr = deep((n as string), tree)
+      clearMatch()
+      resArr && resArr.map(item => {
+        match.value.push(item)
+      })
+    }
+    // 为了控制 输入框为空时，清空所有选项卡
+    if (n === '') {
+      tabShow.value = false
+      clearPropData()
+      clearMatch()
+      clearMatchName()
+    }
+    // 模糊搜索
+    if (typeof n === 'string' && n !== '') {
+      const resArr = search(n, tree)
+      clearMatchName()
+      resArr.map(item => {
+        matchName.value.push(item)
+      })
+    }
 
-  // }, 500)()
+  }, 500)()
 
 
 })

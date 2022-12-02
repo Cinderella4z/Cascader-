@@ -10,7 +10,7 @@ export const arrTotree = (arr: Idata[]): Idata_tree[] => {
 function walk(parent: Idata[], children: Idata[]) {
   parent.map(p => {
     children.map(c => {
-      if (c.parent_id === p.id) {
+      if (c.parent_id === p.id && c.ad_name !== '市辖区') {
         if (p.children) {
           p.children.push(c)
         }

@@ -4,7 +4,8 @@ export interface Idata {
   ad_code: string,
   ad_name: string,
   parent_id: string,
-  level: number
+  level: number,
+  children?: Array<Idata>
 }
 export interface Idata_tree {
   id: string,
