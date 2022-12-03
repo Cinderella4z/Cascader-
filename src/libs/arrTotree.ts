@@ -1,10 +1,11 @@
 import type { Idata, Idata_tree } from "@/types/Idata";
 
 export const arrTotree = (arr: Idata[]): Idata_tree[] => {
-  const parent = arr.filter(item => item.parent_id === '1')
-  const children = arr.filter(item => item.parent_id !== '1')
+  const data: Idata[] = JSON.parse(JSON.stringify(arr))
+  const parent = data.filter(item => item.parent_id === '1')
+  const children = data.filter(item => item.parent_id !== '1')
   walk(parent, children)
-  return parent
+  return parent as Idata_tree[]
 }
 
 function walk(parent: Idata[], children: Idata[]) {

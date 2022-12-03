@@ -1,10 +1,13 @@
 <template>
 
-  <Cascader :data="data" />
+  <Cascader v-model:keyword="keyword" />
 
 </template>
 <script lang="ts" setup>
+import { ref } from 'vue';
+
 //方法
-import data from './assets/data.json'
+const keyword = ref('34')
+
 
 </script>
