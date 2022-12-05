@@ -50,7 +50,7 @@ const getData = async (itemChildren: Idata_tree, index: Ref<number>,) => {
   childList && options.value.push(childList);
 }
 // 控制选择栏显影
-const tabShow = ref(false)
+let tabShow = ref(false)
 const pull = () => {
   tabShow.value = !tabShow.value
 }

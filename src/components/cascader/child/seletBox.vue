@@ -14,8 +14,6 @@
 <script lang="ts" setup>
 import type { Idata_tree } from '@/types/Idata';
 import { computed, ref, toRefs, type Ref, } from 'vue';
-const choose = ref(-1)
-const active = ref()
 const props = defineProps(['index', 'propData', 'show',])
 const { propData, index, show } = toRefs(props)
 
@@ -29,7 +27,6 @@ const getData = (i: Idata_tree, k: number) => {
 const itemClick = (c: Idata_tree, k: number) => {
   emit('getData', c, index)
 }
-
 
 </script>
 <style lang="less" scoped>
