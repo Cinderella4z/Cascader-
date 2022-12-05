@@ -1,5 +1,5 @@
 <template>
-  <div v-close="close">
+  <div v-close="close" class="content-box">
     <div class="top">
       <input v-model="textValue" />
       <button class="btn" @click="pull">{{ Icon }}</button>
@@ -8,10 +8,12 @@
     <seletBoxVue v-for="(item, key) in options" :propData="item" :index="key" :show="tabShow" @getData="getData"
       @getAdcode="getAdcode" />
 
-    <div class="select" v-show="matchNameBoxShow" v-for="item in matchName" @click="cover(item)">
-      <span v-for="i in item">
-        {{ i.ad_name }} /
-      </span>
+    <div class="selectBox" v-if="matchNameBoxShow">
+      <div class="select" v-for="item in matchName" @click="cover(item)">
+        <span v-for="i in item">
+          {{ i.ad_name }} /
+        </span>
+      </div>
     </div>
 
   </div>
@@ -91,45 +93,56 @@ watch((value as Ref), (n) => {
 
 </script>
 <style lang="less" scoped>
-.top {
-  display: flex;
+.content-box {
 
-  input {
-    border: 1px solid #dcdfe6;
-    height: 30px;
-    border-radius: 10px 0 0 10px;
-    border-right: 0;
-    outline: none;
-    color: #606266;
+  // width: ;
+  .top {
+    display: flex;
+    width: 200px;
+
+    input {
+      border: 1px solid #dcdfe6;
+      height: 30px;
+      border-radius: 10px 0 0 10px;
+      border-right: 0;
+      outline: none;
+      color: #606266;
+    }
+
+    button {
+      border: 0;
+      background-color: white;
+      border: 1px solid #dcdfe6;
+      border-left: 0;
+      border-radius: 0 10px 10px 0;
+    }
   }
 
-  button {
-    border: 0;
-    background-color: white;
-    border: 1px solid #dcdfe6;
-    border-left: 0;
-    border-radius: 0 10px 10px 0;
-  }
-}
+  .selectBox {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 200px;
+    width: 200px;
 
-.select {
-  // width: 200px;
-  height: 40px;
-  width: 200px;
-  background-color: #ffffff;
-  white-space: nowrap;
-  box-shadow: 10px 10px 8px #f6f6f6;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  margin-top: 5px;
-  overflow-x: scroll;
-  user-select: none;
-  color: #60627e;
-  font-size: 14px;
+    .select {
+      width: 200px;
+      height: 40px;
+      background-color: #ffffff;
+      white-space: nowrap;
+      box-shadow: 10px 10px 8px #f6f6f6;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      margin-top: 5px;
+      overflow-x: scroll;
+      user-select: none;
+      color: #60627e;
+      font-size: 14px;
 
-  span {
-    margin-left: 5px;
+      span {
+        margin-left: 5px;
+      }
+    }
   }
 }
 </style>
