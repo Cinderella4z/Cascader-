@@ -60,15 +60,15 @@ const getData = async (itemChildren: Idata_tree, index: Ref<number>,) => {
     textValue.value.splice(index.value)
   }
   const childList = await getDataByName(itemChildren.ad_name) as Idata_tree[] | undefined
-  childList && propData.value.push(childList)
+  childList && childList.length && propData.value.push(childList)
   textValue.value.push(itemChildren.ad_name)
 }
 // 控制选择栏显影
-const tabShow = ref(false)
+let tabShow = ref(false)
 const pull = () => {
   tabShow.value = !tabShow.value
 }
-const Icon = computed(() => !tabShow.value ? '👆' : '👇')
+let Icon = computed(() => !tabShow.value ? '👆' : '👇')
 const selectBox = ref()
 
 
@@ -76,13 +76,13 @@ const selectBox = ref()
 const { search, deep } = Search()
 // 通过adcode匹配到的地区名称
 const match: Ref<Idata_tree[]> = ref([])
-const matchBoxShow = computed(() => !tabShow.value && match.value.length)
+const matchBoxShow = computed(() => !tabShow.value && match.value.length > 0)
 const clearMatch = () => {
   match.value = []
 }
 // 模糊搜索
 const matchName: Ref<Idata_tree[][]> = ref([])
-const matchNameBoxShow = computed(() => !tabShow.value && matchName.value.length)
+const matchNameBoxShow = computed(() => !tabShow.value && matchName.value.length > 0)
 const clearMatchName = () => {
   matchName.value = []
 }

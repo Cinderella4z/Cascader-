@@ -1,21 +1,20 @@
 import type { Idata_tree } from "@/types/Idata"
 import data from '@/assets/data.json'
 import { arrTotree } from "@/libs"
+
 export function getDataByName(name?: string): Promise<Idata_tree[]> {
-  return new Promise<Idata_tree[]>((res) => {
+  return new Promise<Idata_tree[]>((resolve) => {
     setTimeout(() => {
       const result: Idata_tree[] = search(name)
-      res(result)
+      resolve(result)
     }, 100);
-  }).then((result) => {
-    return result
   })
-
 }
 
 export function search(name?: string) {
   if (!name) return arrTotree(data)
   return dfs(arrTotree(data))
+  
   function dfs(dataArr: Idata_tree[]): Idata_tree[] {
     let res: Idata_tree[] = []
     for (let i of dataArr) {

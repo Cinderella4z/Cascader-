@@ -1,8 +1,8 @@
 <template>
 
   <div class="box" v-show="show">
-    <div v-for="(c, k) in propData" class="item" :key="c.id" @click="itemClick(c, k)" ref="box">
-      <input class="input" :name="index" :checked="ifChecked" type="radio" @click.stop="getData(c)">{{ c.ad_name }}
+    <div v-for="(areaItem, ind) in propData" class="item" :key="areaItem.id" @click="itemClick(areaItem, ind)">
+      <input class="input" :name="index" type="radio" :checked="checkedIndex === ind">{{ areaItem.ad_name }}
     </div>
   </div>
 
@@ -11,18 +11,17 @@
 <script lang="ts" setup>
 import type { Idata_tree } from '@/types/Idata';
 import { computed, ref, toRefs, } from 'vue';
-const box = ref()
-const ifChecked = ref()
+
 const props = defineProps(['index', 'propData', 'show',])
 const { propData, index, show } = toRefs(props)
 
+let checkedIndex = ref(-1)
+
 const emit = defineEmits(['getData', 'tabShow', 'update:show'])
-const getData = (i: Idata_tree) => {
-  emit('getData', i, index)
-}
-const itemClick = (c: Idata_tree[], k: number) => {
-  box.value[k].children[0].checked = true
-  emit('getData', c, index)
+
+const itemClick = (areaItem: Idata_tree[], ind: number) => {
+  checkedIndex.value = ind
+  emit('getData', areaItem, index)
 }
 
 
