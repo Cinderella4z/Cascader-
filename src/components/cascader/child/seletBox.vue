@@ -1,8 +1,11 @@
 <template>
 
   <div class="box" v-show="show">
-    <div v-for="(c, k) in propData" class="item" :key="c.id" @click="itemClick(c, k)" ref="box">
-      <input class="input" :name="index" :checked="ifChecked" type="radio" @click.stop="getData(c)">{{ c.ad_name }}
+    <div v-for="(c, k) in propData" class="item" :key="c.id" @click="itemClick(c, k)">
+      <input class="input" :name="'1'" type="radio" @click="getData(c, k)">
+      {{
+    c.ad_name
+      }}
     </div>
   </div>
 
@@ -10,18 +13,20 @@
 </template>
 <script lang="ts" setup>
 import type { Idata_tree } from '@/types/Idata';
-import { computed, ref, toRefs, } from 'vue';
-const box = ref()
-const ifChecked = ref()
+import { computed, ref, toRefs, type Ref, } from 'vue';
+const choose = ref(-1)
+const active = ref()
 const props = defineProps(['index', 'propData', 'show',])
 const { propData, index, show } = toRefs(props)
 
-const emit = defineEmits(['getData', 'tabShow', 'update:show'])
-const getData = (i: Idata_tree) => {
+const clickArr: Ref<string[]> = ref([])
+
+const emit = defineEmits(['getData', 'getAdcode'])
+const getData = (i: Idata_tree, k: number) => {
   emit('getData', i, index)
+  emit('getAdcode', i.id)
 }
-const itemClick = (c: Idata_tree[], k: number) => {
-  box.value[k].children[0].checked = true
+const itemClick = (c: Idata_tree, k: number) => {
   emit('getData', c, index)
 }
 
@@ -42,7 +47,7 @@ const itemClick = (c: Idata_tree[], k: number) => {
   .item {
     height: 30px;
     line-height: 30px;
-    color: #60627e;
+    // color: #60627e;
     font-size: 14px;
     overflow: hidden;
     white-space: nowrap;
@@ -54,5 +59,15 @@ const itemClick = (c: Idata_tree[], k: number) => {
     background-color: #f5f7fa;
   }
 
+}
+
+.chooseItem {
+  color: #409eff;
+  font-weight: bolder;
+}
+
+.active {
+  color: #60627e;
+  font-weight: bolder;
 }
 </style>
