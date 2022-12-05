@@ -3,11 +3,16 @@ import type { Idata_tree } from "@/types/Idata"
 import data from '@/assets/data.json'
 import { arrTotree } from "@/libs/arrTotree"
 
-// 直接全部引用他了 
 const tree = arrTotree(data)
 
 export function Search() {
-  // 通过adcode 查找
+  /****通过adcode 查找
+  * @description
+  * @param adcode:string 
+  * @param adcode:Idata_tree[]
+  * @param res?:Idata_tree[] //用于递归传值
+  * @returns res //递归得来的查询数组
+   */
   function deep(adcode: string, data: Idata_tree[] = tree, res: Idata_tree[] = []): Idata_tree[] {
     for (let i of data) {
       if (adcode.includes(i.id) || i.id.includes(adcode)) {
@@ -18,7 +23,12 @@ export function Search() {
     }
     return []
   }
-  // 模糊搜索
+  /****模糊搜索
+* @description
+* @param string:string 
+* @param data:Idata_tree[]
+* @returns res //递归得来的Idata_tree[][]数组
+ */
   function search(string: string, data: Idata_tree[] = tree) {
     let res: Idata_tree[][] = []
     dfs(data)

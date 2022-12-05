@@ -7,16 +7,11 @@
 import { ref, type Ref } from 'vue';
 import { getDataByName } from '@/network/getDataByName';
 
+//动态绑定adcode
 const value = ref('')
-//方法
-// const options: Ref<Idata_tree[][]> = ref([])
-// getDataByName().then(res => {
-//   options.value = [res]
-// })
-
+// 加载函数
 async function load(name?: string) {
   const res = await getDataByName(name)
   return res
 }
-
 </script>

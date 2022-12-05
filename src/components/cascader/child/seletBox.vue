@@ -3,9 +3,7 @@
   <div class="box" v-show="show">
     <div v-for="(c, k) in propData" class="item" :key="c.id" @click="itemClick(c, k)">
       <input class="input" :name="'1'" type="radio" @click="getData(c, k)">
-      {{
-    c.ad_name
-      }}
+      {{ c.ad_name }}
     </div>
   </div>
 
@@ -13,11 +11,9 @@
 </template>
 <script lang="ts" setup>
 import type { Idata_tree } from '@/types/Idata';
-import { computed, ref, toRefs, type Ref, } from 'vue';
+import { ref, toRefs, type Ref, } from 'vue';
 const props = defineProps(['index', 'propData', 'show',])
 const { propData, index, show } = toRefs(props)
-
-const clickArr: Ref<string[]> = ref([])
 
 const emit = defineEmits(['getData', 'getAdcode'])
 const getData = (i: Idata_tree, k: number) => {
