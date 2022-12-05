@@ -1,7 +1,7 @@
 <template>
   <div v-close="close" class="content-box">
     <div class="top">
-      <input v-model="textValue" />
+      <input v-model="textValue" placeholder="区域名搜索" />
       <button class="btn" @click="pull">{{ Icon }}</button>
     </div>
     <seletBoxVue v-for="(item, key) in options" :propData="item" :index="key" :show="tabShow" @getData="getData"
