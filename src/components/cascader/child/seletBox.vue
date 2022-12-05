@@ -1,7 +1,8 @@
 <template>
 
   <div class="box" v-show="show">
-    <div v-for="(c, k) in propData" class="item" :key="c.id" @click="itemClick(c, k)">
+    <div v-for="(c, k) in propData" class="item" :key="c.id" @click="itemClick(c, k)"
+      :class="{ 'active': k === active }">
       <input class="input" :name="'1'" type="radio" @click="getData(c, k)">
       {{ c.ad_name }}
     </div>
@@ -14,7 +15,8 @@ import type { Idata_tree } from '@/types/Idata';
 import { ref, toRefs, type Ref, } from 'vue';
 const props = defineProps(['index', 'propData', 'show',])
 const { propData, index, show } = toRefs(props)
-
+const active = ref(-1)
+const box = ref()
 const emit = defineEmits(['getData', 'getAdcode'])
 const getData = (i: Idata_tree, k: number) => {
   emit('getData', i, index)
@@ -22,7 +24,12 @@ const getData = (i: Idata_tree, k: number) => {
 }
 const itemClick = (c: Idata_tree, k: number) => {
   emit('getData', c, index)
+  active.value = k
 }
+const setActive = () => {
+  active.value = -1
+}
+defineExpose([setActive])
 
 </script>
 <style lang="less" scoped>
@@ -60,7 +67,7 @@ const itemClick = (c: Idata_tree, k: number) => {
 }
 
 .active {
-  color: #60627e;
+  color: #409eff;
   font-weight: bolder;
 }
 </style>

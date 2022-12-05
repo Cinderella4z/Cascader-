@@ -4,9 +4,8 @@
       <input v-model="textValue" />
       <button class="btn" @click="pull">{{ Icon }}</button>
     </div>
-
     <seletBoxVue v-for="(item, key) in options" :propData="item" :index="key" :show="tabShow" @getData="getData"
-      @getAdcode="getAdcode" />
+      @getAdcode="getAdcode" ref="box" />
 
     <div class="selectBox" v-if="matchNameBoxShow">
       <div class="select" v-for="item in matchName" @click="cover(item)">
@@ -19,7 +18,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ref, type Ref, computed, watch, toRefs, } from 'vue';
+import { ref, type Ref, computed, watch, toRefs, onMounted, } from 'vue';
 import dbData from '@/assets/data.json'
 import type { Idata_tree } from '@/types/Idata';
 // 子组件
@@ -37,6 +36,9 @@ const options: Ref<Idata_tree[][]> = ref([])
 load?.value().then((res: Idata_tree[]) => {
   options.value.push(res)
 })
+const box = ref()
+
+
 const getAdcode = (adcode: string) => {
   emit('update:value', adcode)
 }
@@ -47,6 +49,7 @@ const close = () => {
 const getData = async (itemChildren: Idata_tree, index: Ref<number>,) => {
   const childList = await load?.value(itemChildren.ad_name)
   if (options.value[index.value + 1]) {
+    box.value[index.value + 1][0]()
     options.value.splice(index.value + 1)
   }
   childList && options.value.push(childList);
@@ -90,12 +93,16 @@ watch((value as Ref), (n) => {
     cover(searchRes)
   }
 }, { immediate: true })
+watch(box, (n) => {
+  console.log(n);
+
+})
 
 </script>
 <style lang="less" scoped>
 .content-box {
+  width: 800px;
 
-  // width: ;
   .top {
     display: flex;
     width: 200px;
