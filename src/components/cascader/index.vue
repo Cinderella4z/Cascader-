@@ -160,7 +160,7 @@ watch((value as Ref), (n) => {
       height: 40px;
       background-color: #ffffff;
       white-space: nowrap;
-      box-shadow: 10px 10px 8px #f6f6f6;
+      box-shadow: 0px 0px 8px 8px #f6f6f6;
       border-radius: 10px;
       display: flex;
       align-items: center;

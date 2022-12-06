@@ -33,6 +33,7 @@ const itemClick = (c: Idata_tree, k: number) => {
 }
 const setActive = () => {
   active.value = -1
+  ifMatch.value = -1
 }
 const matchItem = ref()
 const setMatchItem = (name: string, index: string) => {
