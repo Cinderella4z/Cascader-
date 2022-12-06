@@ -8,7 +8,7 @@
 
 </template>
 <script lang="ts" setup>
-import { ref, type Ref } from 'vue';
+import { ref } from 'vue';
 import { getDataByName } from '@/network/getDataByName';
 
 //动态绑定adcode

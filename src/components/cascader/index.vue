@@ -27,33 +27,48 @@ import seletBoxVue from './child/seletBox.vue';
 import { Search } from './hooks/search'
 import { arrTotree } from '@/libs';
 import { debounce } from '@/libs';
-
-const props = defineProps(['load', 'value', 'showAllLevels'])
-const emit = defineEmits(['update:value'])
 /****
  * load ：加载源数据函数
  * value：绑定点击元素
  * showAllLevels：控制是否选择所有路径 或 只显示最后一级
  */
+const props = defineProps({
+  load: {
+    type: Function,
+    default: () => { }
+  },
+  value: {
+    type: String,
+    default: ''
+  },
+  showAllLevels: {
+    type: Boolean,
+    default: true
+  }
+})
+const emit = defineEmits(['update:value'])
+
 const { load, value, showAllLevels } = toRefs(props);
 const textValue: Ref<string[] | string> = ref([])
 // 接收数据 传给子组件进行遍历
 const options: Ref<Idata_tree[][]> = ref([])
-load?.value().then((res: Idata_tree[]) => {
-  options.value.push(res)
-})
+const init = () => {
+  load?.value().then((res: Idata_tree[]) => {
+    options.value.push(res)
+  })
+}
+init()
 const box = ref()
 
 const getAdcode = (adcode: string) => {
   emit('update:value', adcode)
 }
-const close = () => {
-  tabShow.value = false
-}
+
 // 点击每一项选项触发
 const getData = async (itemChildren: Idata_tree, index: Ref<number>,) => {
   const childList = await load?.value(itemChildren.ad_name)
   if (options.value[index.value + 1]) {
+    // 为了清除 切换时 后一列中子项高亮
     box.value[index.value + 1][0]()
     options.value.splice(index.value + 1)
   }
@@ -64,37 +79,51 @@ let tabShow = ref(false)
 const pull = () => {
   tabShow.value = !tabShow.value
 }
+const close = () => {
+  tabShow.value = false
+}
 const Icon = computed(() => !tabShow.value ? '👆' : '👇')
-// *****搜索相关 变量 与 方法 
+
+// 模糊搜索 相关方法
 const { search, deep } = Search()
-// 模糊搜索
 const matchName: Ref<Idata_tree[][]> = ref([])
 const matchNameBoxShow = computed(() => !tabShow.value && matchName.value.length)
-// *****
-// 选择框
-const cover = (item?: Idata_tree[]) => {
+const cover = async (item?: Idata_tree[]) => {
   textValue.value = item?.map(c => c.ad_name) as string[]
-  matchName.value = []
+  const length = textValue.value.length
+  // 当选择搜索内容后，清空并再次初始化一次
+  options.value = []
+  init()
+  textValue.value.map(async (item, key) => {
+    const list: Idata_tree[] = await load.value(item)
+    list && options.value.push(list)
+    //调用子组件方法，为了修改高亮
+    //如果是最后一项，就需要通知子组件将这一项改为checked
+    length - 1 === key ? box.value[key][1](item, 'end') : box.value[key][1](item)
+  })
 }
-watch(textValue, (n) => {
+
+
+watch(textValue, debounce((n: string) => {
   matchName.value = []
-  tabShow.value = false
+  // 为了控制 输入框为空时，清空所有选项卡
   // 模糊搜索
   if (typeof n === 'string' && n !== '') {
+    tabShow.value = false
     const resArr = search(n)
     resArr.map(item => {
       matchName.value.push(item)
     })
   }
-})
+}, 200))
 
 watch((value as Ref), (n) => {
   const db = arrTotree(dbData)
   const searchRes = deep(n, db)
   if (n !== '' && showAllLevels?.value) {
-    searchRes && cover(searchRes)
+    textValue.value = searchRes && searchRes.map(i => i.ad_name)
   } else {
-    searchRes && cover([searchRes.pop() as Idata_tree])
+    textValue.value = searchRes && [searchRes.pop() as Idata_tree].map(i => i.ad_name)
   }
 }, { immediate: true })
 

@@ -1,11 +1,11 @@
-export function debounce(fn: Function, delay: number) {
+export function debounce<T>(fn: Function, delay: number) {
   let t: number
-  return function () {
+  return function (n: T) {
     if (t) {
       clearTimeout(t)
     }
     t = setTimeout(() => {
-      fn();
+      fn(n);
     }, delay);
   }
 }
