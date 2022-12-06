@@ -30,7 +30,6 @@ import { debounce } from '@/libs';
 /****
  * load ：加载源数据函数
  * value：绑定点击元素
- * showAllLevels：控制是否选择所有路径 或 只显示最后一级
  */
 const props = defineProps({
   load: {
@@ -41,14 +40,10 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  showAllLevels: {
-    type: Boolean,
-    default: true
-  }
 })
 const emit = defineEmits(['update:value'])
 
-const { load, value, showAllLevels } = toRefs(props);
+const { load, value } = toRefs(props);
 const textValue: Ref<string[] | string> = ref([])
 // 接收数据 传给子组件进行遍历
 const options: Ref<Idata_tree[][]> = ref([])
@@ -81,6 +76,10 @@ const pull = () => {
 }
 const close = () => {
   tabShow.value = false
+  if (!textValue.value) {
+    const db = arrTotree(dbData)
+    textValue.value = deep(value.value, db).map(i => i.ad_name)
+  }
 }
 const Icon = computed(() => !tabShow.value ? '👆' : '👇')
 
@@ -106,7 +105,6 @@ const cover = async (item?: Idata_tree[]) => {
 
 watch(textValue, debounce((n: string) => {
   matchName.value = []
-  // 为了控制 输入框为空时，清空所有选项卡
   // 模糊搜索
   if (typeof n === 'string' && n !== '') {
     tabShow.value = false
@@ -120,11 +118,7 @@ watch(textValue, debounce((n: string) => {
 watch((value as Ref), (n) => {
   const db = arrTotree(dbData)
   const searchRes = deep(n, db)
-  if (n !== '' && showAllLevels?.value) {
-    textValue.value = searchRes && searchRes.map(i => i.ad_name)
-  } else {
-    textValue.value = searchRes && [searchRes.pop() as Idata_tree].map(i => i.ad_name)
-  }
+  textValue.value = searchRes && searchRes.map(i => i.ad_name)
 }, { immediate: true })
 
 
