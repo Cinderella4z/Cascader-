@@ -1,6 +1,10 @@
 <template>
-
-  <Cascader :load="load" v-model:value="value" />
+  <!--  
+ * load ：加载源数据函数
+ * value：绑定点击元素
+ * showAllLevels：控制是否选择所有路径 或 只显示最后一级 
+-->
+  <Cascader :load="load" v-model:value="value" :show-all-levels="true" />
 
 </template>
 <script lang="ts" setup>

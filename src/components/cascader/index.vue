@@ -18,7 +18,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ref, type Ref, computed, watch, toRefs, onMounted, } from 'vue';
+import { ref, type Ref, computed, watch, toRefs, } from 'vue';
 import dbData from '@/assets/data.json'
 import type { Idata_tree } from '@/types/Idata';
 // 子组件
@@ -26,10 +26,16 @@ import seletBoxVue from './child/seletBox.vue';
 // hooks
 import { Search } from './hooks/search'
 import { arrTotree } from '@/libs';
+import { debounce } from '@/libs';
 
-const props = defineProps(['load', 'value'])
+const props = defineProps(['load', 'value', 'showAllLevels'])
 const emit = defineEmits(['update:value'])
-const { load, value } = toRefs(props);
+/****
+ * load ：加载源数据函数
+ * value：绑定点击元素
+ * showAllLevels：控制是否选择所有路径 或 只显示最后一级
+ */
+const { load, value, showAllLevels } = toRefs(props);
 const textValue: Ref<string[] | string> = ref([])
 // 接收数据 传给子组件进行遍历
 const options: Ref<Idata_tree[][]> = ref([])
@@ -37,7 +43,6 @@ load?.value().then((res: Idata_tree[]) => {
   options.value.push(res)
 })
 const box = ref()
-
 
 const getAdcode = (adcode: string) => {
   emit('update:value', adcode)
@@ -74,10 +79,6 @@ const cover = (item?: Idata_tree[]) => {
 watch(textValue, (n) => {
   matchName.value = []
   tabShow.value = false
-  // 为了控制 输入框为空时，清空所有选项卡
-  if (n === '') {
-    textValue.value = []
-  }
   // 模糊搜索
   if (typeof n === 'string' && n !== '') {
     const resArr = search(n)
@@ -86,17 +87,17 @@ watch(textValue, (n) => {
     })
   }
 })
+
 watch((value as Ref), (n) => {
-  if (n !== '') {
-    const db = arrTotree(dbData)
-    const searchRes = deep(n, db)
-    cover(searchRes)
+  const db = arrTotree(dbData)
+  const searchRes = deep(n, db)
+  if (n !== '' && showAllLevels?.value) {
+    searchRes && cover(searchRes)
+  } else {
+    searchRes && cover([searchRes.pop() as Idata_tree])
   }
 }, { immediate: true })
-watch(box, (n) => {
-  console.log(n);
 
-})
 
 </script>
 <style lang="less" scoped>
@@ -153,3 +154,4 @@ watch(box, (n) => {
   }
 }
 </style>
+
