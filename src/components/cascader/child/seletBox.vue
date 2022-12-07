@@ -1,8 +1,8 @@
 <template>
   <div class="box" v-show="show">
-    <div v-for="(c, k) in propData" class="item" :key="c.id" @click="itemClick(c, k)"
+    <div v-for="(c, k) in propData" class="item" :key="c.id" @click="handleItemClick(c, k)"
       :class="{ 'active': k === active }" ref="box">
-      <input class="input" :name="'1'" type="radio" :checked="ifMatch === k" @click="getData(c, k)">
+      <input class="input" :name="'1'" type="radio" :checked="ifMatch === k" @click="handleInputClick(c, k)">
       {{ c.ad_name }}
     </div>
   </div>
@@ -19,23 +19,23 @@ const props = defineProps(['index', 'propData', 'show',])
 const { propData, index, show } = toRefs(props)
 // 控制点击高亮
 const active = ref(-1)
-// 控制原点选中
+// 控制圆点选中
 const ifMatch = ref(-1)
 const box = ref()
-const emit = defineEmits(['getData', 'getAdcode'])
-const getData = (i: Idata_tree, k: number) => {
-  emit('getData', i, index)
+const matchItem = ref()
+const emit = defineEmits(['handleInputClick', 'getAdcode'])
+const handleInputClick = (i: Idata_tree, k: number) => {
+  emit('handleInputClick', i, index)
   emit('getAdcode', i.id)
 }
-const itemClick = (c: Idata_tree, k: number) => {
-  emit('getData', c, index)
+const handleItemClick = (c: Idata_tree, k: number) => {
+  emit('handleInputClick', c, index)
   active.value = k
 }
 const setActive = () => {
   active.value = -1
   ifMatch.value = -1
 }
-const matchItem = ref()
 const setMatchItem = (name: string, index: string) => {
 
   let key = propData?.value.findIndex((item: Idata_tree) => item.ad_name === name)

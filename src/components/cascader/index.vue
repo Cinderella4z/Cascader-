@@ -1,14 +1,14 @@
 <template>
-  <div v-close="close" class="content-box">
+  <div v-close="closeTabShow" class="content-box">
     <div class="top">
       <input v-model="textValue" placeholder="区域名搜索" />
-      <button class="btn" @click="pull">{{ Icon }}</button>
+      <button class="btn" @click="handleTabShow">{{ Icon }}</button>
     </div>
-    <seletBoxVue v-for="(item, key) in options" :propData="item" :index="key" :show="tabShow" @getData="getData"
-      @getAdcode="getAdcode" ref="box" />
+    <seletBoxVue v-for="(item, key) in options" :propData="item" :index="key" :show="tabShow"
+      @handleInputClick="handleInputClick" @getAdcode="getAdcode" ref="boxRef" />
 
     <div class="selectBox" v-if="matchNameBoxShow">
-      <div class="select" v-for="item in matchName" @click="cover(item)">
+      <div class="select" v-for="item in matchName" @click="handleItemClick(item)">
         <span v-for="i in item">
           {{ i.ad_name }} /
         </span>
@@ -27,12 +27,23 @@ import seletBoxVue from './child/seletBox.vue';
 import { Search } from './hooks/search'
 import { arrTotree } from '@/libs';
 import { debounce } from '@/libs';
+/*****全局变量 */
+// 传给子组件的数据
+const options: Ref<Idata_tree[][]> = ref([])
+const boxRef = ref()
+// 控制下拉选择显影
+const tabShow = ref(false)
+// 双绑input框
+const textValue: Ref<string[] | string> = ref([])
+// 模糊搜索匹配的结果 -> 传给子组件遍历
+const matchName: Ref<Idata_tree[][]> = ref([])
+const { search, deep } = Search()
 /****
  * load ：加载源数据函数
  * value：绑定点击元素
  */
 const props = defineProps({
-  load: {
+  loadFn: {
     type: Function,
     default: () => { }
   },
@@ -42,66 +53,55 @@ const props = defineProps({
   },
 })
 const emit = defineEmits(['update:value'])
-
-const { load, value } = toRefs(props);
-const textValue: Ref<string[] | string> = ref([])
+const { loadFn, value } = toRefs(props);
+/*****Computed */
+const Icon = computed(() => !tabShow.value ? '👆' : '👇')
+const matchNameBoxShow = computed(() => !tabShow.value && matchName.value.length)
 // 接收数据 传给子组件进行遍历
-const options: Ref<Idata_tree[][]> = ref([])
-const init = () => {
-  load?.value().then((res: Idata_tree[]) => {
+const initLoadData = () => {
+  loadFn?.value().then((res: Idata_tree[]) => {
     options.value.push(res)
   })
 }
-init()
-const box = ref()
-
 const getAdcode = (adcode: string) => {
   emit('update:value', adcode)
 }
-
 // 点击每一项选项触发
-const getData = async (itemChildren: Idata_tree, index: Ref<number>,) => {
-  const childList = await load?.value(itemChildren.ad_name)
+const handleInputClick = async (itemChildren: Idata_tree, index: Ref<number>,) => {
+  const childList = await loadFn?.value(itemChildren.ad_name)
   if (options.value[index.value + 1]) {
     // 为了清除 切换时 后一列中子项高亮
-    box.value[index.value + 1][0]()
+    boxRef.value[index.value + 1][0]()
     options.value.splice(index.value + 1)
   }
   childList && options.value.push(childList);
 }
 // 控制选择栏显影
-let tabShow = ref(false)
-const pull = () => {
+const handleTabShow = () => {
   tabShow.value = !tabShow.value
 }
-const close = () => {
+const closeTabShow = () => {
   tabShow.value = false
   if (!textValue.value) {
     const db = arrTotree(dbData)
-    textValue.value = deep(value.value, db).map(i => i.ad_name)
+    textValue.value = deep(value.value, db) ? deep(value.value, db).map(i => i.ad_name) : ''
   }
 }
-const Icon = computed(() => !tabShow.value ? '👆' : '👇')
-
-// 模糊搜索 相关方法
-const { search, deep } = Search()
-const matchName: Ref<Idata_tree[][]> = ref([])
-const matchNameBoxShow = computed(() => !tabShow.value && matchName.value.length)
-const cover = async (item?: Idata_tree[]) => {
+const handleItemClick = async (item?: Idata_tree[]) => {
   textValue.value = item?.map(c => c.ad_name) as string[]
   const length = textValue.value.length
   // 当选择搜索内容后，清空并再次初始化一次
   options.value = []
-  init()
+  initLoadData()
   textValue.value.map(async (item, key) => {
-    const list: Idata_tree[] = await load.value(item)
+    const list: Idata_tree[] = await loadFn.value(item)
     list && options.value.push(list)
     //调用子组件方法，为了修改高亮
     //如果是最后一项，就需要通知子组件将这一项改为checked
-    length - 1 === key ? box.value[key][1](item, 'end') : box.value[key][1](item)
+    length - 1 === key ? boxRef.value[key][1](item, 'end') : boxRef.value[key][1](item)
   })
 }
-
+initLoadData()
 
 watch(textValue, debounce((n: string) => {
   matchName.value = []
