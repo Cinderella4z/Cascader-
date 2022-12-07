@@ -5,10 +5,10 @@
       <button class="btn" @click="handleTabShow">{{ Icon }}</button>
     </div>
     <seletBoxVue v-for="(item, key) in data" :propData="item" :index="key" :show="tabShow"
-      @handleInputClick="handleInputClick" @getAdcode="getAdcode" ref="boxRef" />
+      @handleInputClick="handleInputClick" @handleItemClick="handleItemClick" @getAdcode="getAdcode" ref="boxRef" />
 
     <div class="selectBox" v-if="matchNameBoxShow">
-      <div class="select" v-for="item in matchName" @click="handleItemClick(item)">
+      <div class="select" v-for="item in matchName" @click="handleItemCheck(item)">
         <span v-for="i in item">
           {{ i.ad_name }} /
         </span>
@@ -38,10 +38,17 @@ const textValue: Ref<string[] | string> = ref([])
 // 模糊搜索匹配的结果 -> 传给子组件遍历
 const matchName: Ref<Idata_tree[][]> = ref([])
 const { search, deep } = Search()
-/****
- * load ：加载源数据函数
- * value：绑定点击元素
- */
+/* description: 带搜索的地区级联选择器
+* props: 组件属性
+* value 选中地区的值 V - model 绑定对象
+* props.useAsync { boolean } 是否异步获取数据，默认是false
+* props.data { array } 备选列表数据(tree)。当useAsync为false时候必传
+* props.loadFn[(currentNode, resolve) => void - 远程获取树列表数据，USeAsunc rue时候以传 
+* props.searchFn[(keywords, resolve) => Void} 远程搜索函数，当 useAsync true 时候必传 
+* proDs.checkstrictLu ooLeD) 是否严格的进守父子节点不互相关联 就认为ture, true 时候可以选中任何 - 节点，faLse 时候 只能选中最后一级的节点
+* events: 组件事件
+* change 改变选中值触发事件，回调参数为选中的节点
+*/
 const compProps = defineProps({
   value: {
     type: String,
@@ -52,18 +59,16 @@ const compProps = defineProps({
     default: () => { }
   }
 })
-
 const emit = defineEmits(['update:value', 'change'])
 const { value, props } = toRefs(compProps);
 const { loadFn, searchFn, useAsync, checkStrictly, dataArr } = props.value
-
 
 /*****Computed */
 const Icon = computed(() => !tabShow.value ? '👆' : '👇')
 const matchNameBoxShow = computed(() => !tabShow.value && matchName.value.length)
 const inputDisable = computed(() => !useAsync)
 const placeholder = computed(() => useAsync ? '试试搜索：合肥' : '请选择')
-// 接收数据 传给子组件进行遍历
+// 初始化数据
 const initLoadData = () => {
   if (typeof useAsync === 'undefined' || useAsync === false) {
     data.value = dataArr
@@ -75,8 +80,10 @@ const getAdcode = (adcode: string) => {
   emit('update:value', adcode)
 }
 // 点击每一项选项触发
-const handleInputClick = async (itemChildren: Idata_tree, index: Ref<number>,) => {
+const handleChange = (itemChildren: Idata_tree) => {
   emit('change', itemChildren)
+}
+const handleItemClick = async (itemChildren: Idata_tree, index: Ref<number>,) => {
   function quchong() {
     if (data.value[index.value + 1]) {
       // 为了清除 切换时 后一列中子项高亮
@@ -94,24 +101,24 @@ const handleInputClick = async (itemChildren: Idata_tree, index: Ref<number>,) =
     }, itemChildren.ad_name)
   }
 }
-// 控制选择栏显影
-const handleTabShow = () => {
-  tabShow.value = !tabShow.value
+const handleInputClick = async (itemChildren: Idata_tree, index: Ref<number>,) => {
+  handleChange(itemChildren)
+  handleItemClick(itemChildren, index)
 }
-const closeTabShow = () => {
-  tabShow.value = false
-  if (!textValue.value) {
-    const db = arrTotree(dbData)
-    textValue.value = deep(value.value, db) ? deep(value.value, db).map(i => i.ad_name) : ''
+const handleItemCheck = async (item?: Idata_tree[]) => {
+  if (item) {
+    if (checkStrictly) {
+      textValue.value = item.map(c => c.ad_name) as string[]
+    } else {
+      textValue.value = [item[item?.length - 1].ad_name]
+    }
   }
-}
-const handleItemClick = async (item?: Idata_tree[]) => {
-  textValue.value = item?.map(c => c.ad_name) as string[]
-  const length = textValue.value.length
+  const _textValue = item?.map(c => c.ad_name) as string[]
+  const length = _textValue.length
   // 当选择搜索内容后，清空并再次初始化一次
   data.value = []
   initLoadData()
-  textValue.value.map((item, key) => {
+  _textValue.map((item, key) => {
     if (typeof useAsync === 'undefined' || useAsync === false) {
     }
     else {
@@ -123,7 +130,18 @@ const handleItemClick = async (item?: Idata_tree[]) => {
 
   })
 }
-
+// 控制选择栏显影
+const handleTabShow = () => {
+  tabShow.value = !tabShow.value
+}
+// 点击非组件地方 关闭下拉栏
+const closeTabShow = () => {
+  tabShow.value = false
+  if (!textValue.value) {
+    const db = arrTotree(dbData)
+    textValue.value = deep(value.value, db) ? deep(value.value, db).map(i => i.ad_name) : ''
+  }
+}
 initLoadData()
 
 watch(textValue, debounce((n: string) => {

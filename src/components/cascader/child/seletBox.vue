@@ -23,14 +23,14 @@ const active = ref(-1)
 const ifMatch = ref(-1)
 const box = ref()
 const matchItem = ref()
-const emit = defineEmits(['handleInputClick', 'getAdcode'])
+const emit = defineEmits(['handleInputClick', 'getAdcode', 'handleItemClick'])
 const handleInputClick = (i: Idata_tree, k: number) => {
   emit('handleInputClick', i, index)
   emit('getAdcode', i.id)
   active.value = k
 }
 const handleItemClick = (c: Idata_tree, k: number) => {
-  emit('handleInputClick', c, index)
+  emit('handleItemClick', c, index)
   active.value = k
 }
 const setActive = () => {
