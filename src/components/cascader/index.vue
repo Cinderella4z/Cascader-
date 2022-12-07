@@ -1,10 +1,10 @@
 <template>
   <div v-close="closeTabShow" class="content-box">
     <div class="top">
-      <input v-model="textValue" placeholder="区域名搜索" />
+      <input v-model="textValue" :disabled="inputDisable" :placeholder="placeholder" />
       <button class="btn" @click="handleTabShow">{{ Icon }}</button>
     </div>
-    <seletBoxVue v-for="(item, key) in options" :propData="item" :index="key" :show="tabShow"
+    <seletBoxVue v-for="(item, key) in data" :propData="item" :index="key" :show="tabShow"
       @handleInputClick="handleInputClick" @getAdcode="getAdcode" ref="boxRef" />
 
     <div class="selectBox" v-if="matchNameBoxShow">
@@ -14,7 +14,6 @@
         </span>
       </div>
     </div>
-
   </div>
 </template>
 <script lang="ts" setup>
@@ -29,12 +28,13 @@ import { arrTotree } from '@/libs';
 import { debounce } from '@/libs';
 /*****全局变量 */
 // 传给子组件的数据
-const options: Ref<Idata_tree[][]> = ref([])
+const data: Ref<Idata_tree[][]> = ref([])
 const boxRef = ref()
 // 控制下拉选择显影
 const tabShow = ref(false)
 // 双绑input框
 const textValue: Ref<string[] | string> = ref([])
+
 // 模糊搜索匹配的结果 -> 传给子组件遍历
 const matchName: Ref<Idata_tree[][]> = ref([])
 const { search, deep } = Search()
@@ -42,39 +42,57 @@ const { search, deep } = Search()
  * load ：加载源数据函数
  * value：绑定点击元素
  */
-const props = defineProps({
-  loadFn: {
-    type: Function,
-    default: () => { }
-  },
+const compProps = defineProps({
   value: {
     type: String,
     default: ''
   },
+  props: {
+    type: Object,
+    default: () => { }
+  }
 })
-const emit = defineEmits(['update:value'])
-const { loadFn, value } = toRefs(props);
+
+const emit = defineEmits(['update:value', 'change'])
+const { value, props } = toRefs(compProps);
+const { loadFn, searchFn, useAsync, checkStrictly, dataArr } = props.value
+
+
 /*****Computed */
 const Icon = computed(() => !tabShow.value ? '👆' : '👇')
 const matchNameBoxShow = computed(() => !tabShow.value && matchName.value.length)
+const inputDisable = computed(() => !useAsync)
+const placeholder = computed(() => useAsync ? '试试搜索：合肥' : '请选择')
 // 接收数据 传给子组件进行遍历
 const initLoadData = () => {
-  loadFn?.value().then((res: Idata_tree[]) => {
-    options.value.push(res)
-  })
+  if (typeof useAsync === 'undefined' || useAsync === false) {
+    data.value = dataArr
+  } else {
+    loadFn((res: Idata_tree[]) => { data.value.push(res) }, '')
+  }
 }
 const getAdcode = (adcode: string) => {
   emit('update:value', adcode)
 }
 // 点击每一项选项触发
 const handleInputClick = async (itemChildren: Idata_tree, index: Ref<number>,) => {
-  const childList = await loadFn?.value(itemChildren.ad_name)
-  if (options.value[index.value + 1]) {
-    // 为了清除 切换时 后一列中子项高亮
-    boxRef.value[index.value + 1][0]()
-    options.value.splice(index.value + 1)
+  emit('change', itemChildren)
+  function quchong() {
+    if (data.value[index.value + 1]) {
+      // 为了清除 切换时 后一列中子项高亮
+      boxRef.value[index.value + 1][0]()
+      data.value.splice(index.value + 1)
+    }
   }
-  childList && options.value.push(childList);
+  if (typeof useAsync === 'undefined' || useAsync === false) {
+    quchong()
+    itemChildren.children && data.value.push(itemChildren.children)
+  } else {
+    loadFn((res: Idata_tree[]) => {
+      quchong()
+      res && data.value.push(res)
+    }, itemChildren.ad_name)
+  }
 }
 // 控制选择栏显影
 const handleTabShow = () => {
@@ -91,16 +109,21 @@ const handleItemClick = async (item?: Idata_tree[]) => {
   textValue.value = item?.map(c => c.ad_name) as string[]
   const length = textValue.value.length
   // 当选择搜索内容后，清空并再次初始化一次
-  options.value = []
+  data.value = []
   initLoadData()
-  textValue.value.map(async (item, key) => {
-    const list: Idata_tree[] = await loadFn.value(item)
-    list && options.value.push(list)
-    //调用子组件方法，为了修改高亮
-    //如果是最后一项，就需要通知子组件将这一项改为checked
-    length - 1 === key ? boxRef.value[key][1](item, 'end') : boxRef.value[key][1](item)
+  textValue.value.map((item, key) => {
+    if (typeof useAsync === 'undefined' || useAsync === false) {
+    }
+    else {
+      loadFn((list: Idata_tree[]) => {
+        list && data.value.push(list)
+        length - 1 === key ? boxRef.value[key][1](item, 'end') : boxRef.value[key][1](item)
+      }, item)
+    }
+
   })
 }
+
 initLoadData()
 
 watch(textValue, debounce((n: string) => {
@@ -108,9 +131,10 @@ watch(textValue, debounce((n: string) => {
   // 模糊搜索
   if (typeof n === 'string' && n !== '') {
     tabShow.value = false
-    const resArr = search(n)
-    resArr.map(item => {
-      matchName.value.push(item)
+    searchFn(n, (res: Idata_tree[][]) => {
+      res.map(item => {
+        matchName.value.push(item)
+      })
     })
   }
 }, 200))
@@ -118,7 +142,13 @@ watch(textValue, debounce((n: string) => {
 watch((value as Ref), (n) => {
   const db = arrTotree(dbData)
   const searchRes = deep(n, db)
-  textValue.value = searchRes && searchRes.map(i => i.ad_name)
+  if (checkStrictly) {
+    textValue.value = searchRes && searchRes.map(i => i.ad_name)
+  } else {
+    textValue.value = searchRes && [searchRes[searchRes.length - 1].ad_name]
+  }
+
+
 }, { immediate: true })
 
 

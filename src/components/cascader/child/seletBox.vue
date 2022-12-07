@@ -1,15 +1,15 @@
 <template>
   <div class="box" v-show="show">
-    <div v-for="(c, k) in propData" class="item" :key="c.id" @click="handleItemClick(c, k)"
+    <div v-for="(c, k) in propData" class="item" :key="c.id" @click.stop="handleItemClick(c, k)"
       :class="{ 'active': k === active }" ref="box">
-      <input class="input" :name="'1'" type="radio" :checked="ifMatch === k" @click="handleInputClick(c, k)">
+      <input class="input" :name="'1'" type="radio" :checked="ifMatch === k" @click.stop="handleInputClick(c, k)">
       {{ c.ad_name }}
     </div>
   </div>
 </template>
 <script lang="ts" setup>
 import type { Idata_tree } from '@/types/Idata';
-import { onMounted, ref, toRefs, watch, type Ref, nextTick } from 'vue';
+import { ref, toRefs, watch, type Ref, nextTick } from 'vue';
 /*****
  *propData:父组件传来进行遍历创建
  *index: 此变量是父组件遍历子组件中的index, 为了得知此子组件是第几个
@@ -27,6 +27,7 @@ const emit = defineEmits(['handleInputClick', 'getAdcode'])
 const handleInputClick = (i: Idata_tree, k: number) => {
   emit('handleInputClick', i, index)
   emit('getAdcode', i.id)
+  active.value = k
 }
 const handleItemClick = (c: Idata_tree, k: number) => {
   emit('handleInputClick', c, index)
