@@ -33,6 +33,8 @@ const props = {
 }
 const change = (item: Idata_tree) => {
   console.log(item);
+  console.log(value.value);
+  
 }
 
 //动态绑定adcode
