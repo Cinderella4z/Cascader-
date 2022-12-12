@@ -68,7 +68,9 @@ const Icon = computed(() => !tabShow.value ? '👆' : '👇')
 const matchNameBoxShow = computed(() => !tabShow.value && matchName.value.length)
 const inputDisable = computed(() => !useAsync)
 const placeholder = computed(() => useAsync ? '试试搜索：合肥' : '请选择')
-// 初始化数据
+/***
+ * @description 初始化数据源 data
+ */
 const initLoadData = () => {
   if (typeof useAsync === 'undefined' || useAsync === false) {
     data.value = dataArr
@@ -76,13 +78,21 @@ const initLoadData = () => {
     loadFn((res: Idata_tree[]) => { data.value.push(res) }, '')
   }
 }
+/***
+ * @description 监听子组件触发点击 获取点击项的adcode
+ */
 const getAdcode = (adcode: string) => {
   emit('update:value', adcode)
 }
-// 点击每一项选项触发
+/***
+ * @description 但绑定value改变时向父组件抛出事件
+ */
 const handleChange = (itemChildren: Idata_tree) => {
   emit('change', itemChildren)
 }
+/***
+ * @description 点击除了input圈外的事件
+ */
 const handleItemClick = async (itemChildren: Idata_tree, index: Ref<number>,) => {
   function quchong() {
     if (data.value[index.value + 1]) {
@@ -101,10 +111,16 @@ const handleItemClick = async (itemChildren: Idata_tree, index: Ref<number>,) =>
     }, itemChildren.ad_name)
   }
 }
+/***
+ * @description 点击input事件
+ */
 const handleInputClick = async (itemChildren: Idata_tree, index: Ref<number>,) => {
   handleChange(itemChildren)
   handleItemClick(itemChildren, index)
 }
+/***
+ * @description 点击模糊搜索框 赋值函数
+ */
 const handleItemCheck = async (item?: Idata_tree[]) => {
   if (item) {
     if (checkStrictly) {
@@ -130,11 +146,15 @@ const handleItemCheck = async (item?: Idata_tree[]) => {
 
   })
 }
-// 控制选择栏显影
+/***
+ * @description 控制选择栏的显影
+ */
 const handleTabShow = () => {
   tabShow.value = !tabShow.value
 }
-// 点击非组件地方 关闭下拉栏
+/***
+ * @description 监听鼠标 点击不是组件 则隐藏下拉栏
+ */
 const closeTabShow = () => {
   tabShow.value = false
   if (!textValue.value) {

@@ -7,9 +7,9 @@ const tree = arrTotree(data)
 
 export function Search() {
   /****通过adcode 查找
-  * @description
+  * @description  通过adcode查找
   * @param adcode:string 
-  * @param adcode:Idata_tree[]
+  * @param data:Idata_tree[] 数据源
   * @param res?:Idata_tree[] //用于递归传值
   * @returns res //递归得来的查询数组
    */
@@ -24,10 +24,10 @@ export function Search() {
     return []
   }
   /****模糊搜索
-* @description
-* @param string:string 
-* @param data:Idata_tree[]
-* @returns res //递归得来的Idata_tree[][]数组
+* @description 模糊搜索
+* @param string:string 地区name
+* @param data:Idata_tree[] 数据源
+* @returns res:递归得来的Idata_tree[][]数组
  */
   function search(string: string, data: Idata_tree[] = tree) {
     let res: Idata_tree[][] = []

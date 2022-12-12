@@ -2,6 +2,11 @@ import type { Idata_tree } from "@/types/Idata"
 import data from '@/assets/data.json'
 import { arrTotree } from "@/libs"
 
+/***
+ * @description 通过地区名获取信息的接口函数
+ * @param {string} name
+ * @returns {Promise<Idata_tree[]>} 返回对应地区信息的prmise
+ */
 export function getDataByName(name?: string): Promise<Idata_tree[]> {
   return new Promise<Idata_tree[]>((resolve) => {
     setTimeout(() => {

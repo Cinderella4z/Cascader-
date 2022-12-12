@@ -1,4 +1,9 @@
 import type { Idata, Idata_tree } from "@/types/Idata";
+/***
+ * @description 将json格式的数据转换为树形结构
+ * @param  arr
+ * @returns  
+ */
 
 export const arrTotree = (arr: Idata[]): Idata_tree[] => {
   const data: Idata[] = JSON.parse(JSON.stringify(arr))
